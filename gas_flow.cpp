@@ -1,6 +1,7 @@
 // Gas Flow Numerical Model Based on Molecular Flow Conditions
 
 // Blake Leonard
+// Monitor Instruments
 // 2012
 
 
@@ -20,39 +21,36 @@ using namespace::std;
 void main()
 {
 
+	const double tube_diameter = 0.000025;              	// Meters
 
-	const double tube_diameter = 0.000025;              // Meters
+	const double tube_length = 0.381;                   	// Meters
 
-	const double tube_length = 0.381;                   // Meters
+	const double inlet_pressure = 1;               		// Pascals ( 1 atm = 101325 )
 
-	const double inlet_pressure = 1;               // Pascals ( 1 atm = 101325 )
+	const int inlet_temperature = 300;                  	// Kelvin
 
-	const int inlet_temperature = 300;                  // Kelvin
+	const int molecular_mass = 4;                       	// AMU
 
-	const int molecular_mass = 4;                       // AMU
+	const double molecular_diameter = 0.000000000062;   	// Meters
 
-	const double molecular_diameter = 0.000000000062;   // Meters
-
-	const double time_step = 0.00001;                  // Seconds
+	const double time_step = 0.00001;                  	// Seconds
 
 
- 
 	const unsigned int global_steps = 4000000000;
 
-	const unsigned int max_particles = 40000000;	    // Max particles allowed in tube
+	const unsigned int max_particles = 40000000;	    	// Max particles allowed in tube
 
-	const _int64 particle_weight = 1000;           // # of molecules represented by virtual particles
+	const _int64 particle_weight = 1000;           		// # of molecules represented by virtual particles
 
-	const int local_pressure_resolution = 20;		    // # of local pressure cells within tube
+	const int local_pressure_resolution = 20;		// # of local pressure cells within tube
 
-	const int sampling_resolution = 100;              // # of global_steps used to sample flow rate
+	const int sampling_resolution = 100;              	// # of global_steps used to sample flow rate
 
-	int particles = 0;								    // # of particles currently in tube
+	int particles = 0;					// # of particles currently in tube
 
 	int old_particles = 0;
 
-	const double k = 0.0000000000000000000000138;       // Boltzmann's Constant in Joules/Kelvin
-
+	const double k = 0.0000000000000000000000138;       	// Boltzmann's Constant in Joules/Kelvin
 
 
 	const double molecular_mass_kg = molecular_mass * 0.0000000000000000000000000016605;
@@ -65,7 +63,7 @@ void main()
 
 	const double local_volume = local_area * local_space_size;
 
-	double inlet_conductance;        // = ( mean_molecular_speed * local_area ) / 4;           // Molecular Flow Conductance, Change?
+	double inlet_conductance;        							// = ( mean_molecular_speed * local_area ) / 4;           // Molecular Flow Conductance, Change?
 
 	double pressure_ratio;
 
@@ -115,8 +113,7 @@ void main()
 	static double particle_z_velocity[max_particles];
 
 
-
-	double local_pressure[local_pressure_resolution];     // Pascals
+	double local_pressure[local_pressure_resolution];     	// Pascals
 
 	double average_first_pressure = 0;
 
@@ -130,9 +127,7 @@ void main()
 	srand((unsigned)time(0));
 
 
-
 	// Global Iterations
-
 
 	for ( int istep = 0; istep < global_steps; istep ++ )
 	{
@@ -141,7 +136,6 @@ void main()
 
 
 		// Initialize local particle counts
-
 
 		for ( int kstep = 0; kstep < local_pressure_resolution; kstep ++ )
 		{
@@ -152,7 +146,6 @@ void main()
 
 		
 		// Count Particles in local pressures regions
-
 
 		for ( int jstep = 0; jstep < particles; jstep ++ )
 		{
@@ -176,7 +169,6 @@ void main()
 
 		// Calculate local pressures & collision probabilities based on particle densities
 
-
 		for ( jstep = 0; jstep < local_pressure_resolution; jstep ++ )
 		{
 
@@ -188,12 +180,10 @@ void main()
 
 		}
 
-
 		average_first_pressure = average_first_pressure + local_pressure[0];
 
 
 		// Move particles, handle collisions and exiting particles
-
 
 		for ( jstep = 0; jstep < particles; jstep ++ )
 		{
@@ -208,7 +198,6 @@ void main()
 			// Collision with wall
 
 			particle_r_position = sqrt( ( particle_x_position[jstep] * particle_x_position[jstep] ) + ( particle_y_position[jstep] * particle_y_position[jstep] ) );
-
 
 			if ( particle_r_position > ( tube_diameter / 2 ) )
 			{
@@ -239,13 +228,10 @@ void main()
 				particle_y_velocity[jstep] = particle_y_velocity[jstep] * mean_molecular_speed;
 
 				particle_z_velocity[jstep] = particle_z_velocity[jstep] * mean_molecular_speed;
-				
-
 			}
 
 
 			// Inter-particle Collisions
-
 
 			for ( int lstep = 0; lstep < local_pressure_resolution; lstep ++ )
 			{
@@ -277,18 +263,14 @@ void main()
 						particle_y_velocity[jstep] = particle_y_velocity[jstep] * mean_molecular_speed;
 
 						particle_z_velocity[jstep] = particle_z_velocity[jstep] * mean_molecular_speed;
-
 					}
 
 					break;
-
-				}
-				
+				}	
 			}
 
 
 			// "Collision" with front of tube
-
 
 			if ( particle_z_position[jstep] <= 0 )
 			{
@@ -317,12 +299,10 @@ void main()
 				particle_y_velocity[jstep] = particle_y_velocity[jstep] * mean_molecular_speed;
 
 				particle_z_velocity[jstep] = particle_z_velocity[jstep] * mean_molecular_speed;
-
 			}
 
 
 			// Handle Exiting Particles
-
 
 			if ( particle_z_position[jstep] >= tube_length )
 			{
@@ -353,17 +333,13 @@ void main()
 				jstep --;
 
 				long_outlet_particle_rate ++;
-
 			}
-
 		}
 
 
 		// Particles enter tube based on inlet pressure and 1st local pressure
 
-
 		pressure_ratio = local_pressure[0] / inlet_pressure;
-
 
 		if ( pressure_ratio >= 1 )
 		{
@@ -394,11 +370,9 @@ void main()
 
 		inlet_particle_rate = floor( inlet_particle_rate + 0.5 );
 
-		
 
 		// Give entering particles coordinates & velocities
 	
-
 		for ( jstep = 0; jstep < inlet_particle_rate; jstep ++ )
 		{
 
@@ -435,30 +409,21 @@ void main()
 			particle_y_velocity[particles + jstep] = particle_y_velocity[particles + jstep] * mean_molecular_speed;
 
 			particle_z_velocity[particles + jstep] = particle_z_velocity[particles + jstep] * mean_molecular_speed;
-
-
 		}
-
 
 		particles = particles + inlet_particle_rate;
 
 		long_inlet_particle_rate = long_inlet_particle_rate + inlet_particle_rate;
 
 
-
 		// If Equilibrium or max_particles is reached, break
 		
-		
-
 		if ( particles >= ( 0.99 * max_particles ) )
 		{
 
 			break;
 
 		}
-
-
-		
 
 		if ( ( ( istep % sampling_resolution ) == 0 ) & ( istep > 0 ) )
 		{
@@ -500,7 +465,6 @@ void main()
 			{
 
 				cout << local_particle_count[kstep] << endl;
-
 			}
 
 
@@ -512,12 +476,8 @@ void main()
 			long_outlet_particle_rate = 0;
 
 			average_first_pressure = 0;
-
 		}
-
 	}
 
-
 	return;
-
 }
